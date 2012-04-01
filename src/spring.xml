@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="GBK"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+  <bean id="dataSource" class="org.apache.tomcat.jdbc.ext.TomcatDataSourceFactory" 
+        factory-method="createDataSource"
+        destroy-method="close">
+    <constructor-arg value="classpath:resource-jdbc.xml" />
+    <!--
+    <constructor-arg>
+      <props>
+        <prop key="username">root</prop>
+        <prop key="password">masterkey</prop>
+        <prop key="driverClassName">com.mysql.jdbc.Driver</prop>
+        <prop key="url">jdbc:mysql://127.0.0.1:3306/mysql</prop>
+        <prop key="jdbcInterceptors">StatementFinalizer;
+                                     SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=1)
+        </prop>
+      </props>
+    </constructor-arg>
+    -->
+  </bean>
+</beans>

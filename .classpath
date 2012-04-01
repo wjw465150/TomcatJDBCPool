@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="lib/tomcat-juli.jar" sourcepath="lib/tomcat-juli-src"/>
+	<classpathentry kind="lib" path="lib/wjw-mysql-connector-java-5.1.6-bin.jar"/>
+	<classpathentry kind="lib" path="lib/tomcat-jdbc.jar" sourcepath="lib/tomcat-jdbc-src"/>
+	<classpathentry kind="lib" path="lib/Spring/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/Spring/log4j-wjw.jar"/>
+	<classpathentry kind="lib" path="lib/Spring/spring.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

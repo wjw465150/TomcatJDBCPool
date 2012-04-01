@@ -1,0 +1,46 @@
+wjw-tomcat-jdbc.jar包含了全部的tomcat jdbc pool的文件,并在org\apache\tomcat\jdbc\ext\目录下增加了一个TomcatDataSourceFactory.class类,
+TomcatDataSourceFactory类的目的就是能从兼容tomcat的server.xml的<Resource>标签里创建org.apache.tomcat.jdbc.pool.DataSource;
+并把<Resource>标签里的属性值赋给org.apache.tomcat.jdbc.pool.DataSource,
+同时校验<Resource>里的属性名是否存在于tomcat jdbc pool的属性集里,如果不存在会给出警告,防止配置属性名时出现的输入此错误!
+例如:属性文件名:resource-jdbc.xml,内容是:
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  说明: tomcat jdbc pool的参数,既可以作为Resource的属性,也可以作为Resource的子元素;
+  例如: <Resource driverClassName="com.mysql.jdbc.Driver"/>  
+     或者 <Resource><driverClassName>com.mysql.jdbc.Driver</driverClassName></Resource>
+    如果同时出现,那么元素值会覆盖属性值.
+-->
+<Resource name="jdbc/TestDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              testWhileIdle="true"
+              testOnBorrow="true"
+              testOnReturn="false"
+              validationQuery="SELECT 1"
+              validationInterval="30000"
+              timeBetweenEvictionRunsMillis="30000"
+              maxActive="100"
+              minIdle="10"
+              maxWait="10000"
+              initialSize="10"
+              removeAbandonedTimeout="60"
+              removeAbandoned="true"
+              logAbandoned="true"
+              minEvictableIdleTimeMillis="30000"
+              jmxEnabled="true"
+              username="root"
+              password="masterkey"
+              driverClassName="com.mysql.jdbc.Driver"
+              url="jdbc:mysql://127.0.0.1:3306/mysql"
+              >
+  <jdbcInterceptors>StatementFinalizer;
+  SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=1)</jdbcInterceptors>
+</Resource>
+java代码是:      javax.sql.DataSource datasource = TomcatDataSourceFactory.createDataSource("classpath:resource-jdbc.xml");
+在Spring环境里的配置方式如如下:
+   <bean id="dataSource" class="org.apache.tomcat.jdbc.ext.TomcatDataSourceFactory" 
+         factory-method="createDataSource"
+         destroy-method="close">
+     <constructor-arg value="classpath:resource-jdbc.xml" />
+   </bean>

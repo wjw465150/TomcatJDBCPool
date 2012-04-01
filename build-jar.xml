@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project name="Jar wjw-tomcat-jdbc.jar" default="main" basedir=".">
+  <property name="version" value="-7.0.26"/>
+  <target name="main">
+    <delete file="${basedir}/wjw-tomcat-jdbc${version}.jar"/>
+    <jar destfile="${basedir}/wjw-tomcat-jdbc${version}.jar" manifest="${basedir}/MANIFEST.MF">
+      <fileset dir="${basedir}/bin">
+        <exclude name="wjw/**" />
+        <exclude name="*.properties" />
+        <exclude name="*.xml" />
+      </fileset>
+      <zipfileset src="lib/tomcat-jdbc.jar">
+      </zipfileset>
+    </jar>
+
+    <delete dir="${basedir}/doc-api" quiet="true"/>
+    <javadoc access="public" author="true"
+      classpath="lib/Spring/spring.jar;lib/tomcat-jdbc.jar;lib/wjw-mysql-connector-java-5.1.6-bin.jar;lib/Spring/commons-logging.jar;lib/Spring/log4j-wjw.jar;lib/ojdbc5.jar;lib/tomcat-juli.jar"
+      destdir="doc-api" Windowtitle="Tomcat jdbc pool" doctitle="Tomcat jdbc pool" nodeprecated="false" nodeprecatedlist="false" noindex="false"
+      nonavbar="false" notree="false" source="1.5" 
+      splitindex="true" use="true" version="true">
+      <fileset dir="src">
+        <include name="org/**" />
+      </fileset>
+      <fileset dir="lib/tomcat-jdbc-src">
+      </fileset>
+    </javadoc>
+  </target>
+</project>

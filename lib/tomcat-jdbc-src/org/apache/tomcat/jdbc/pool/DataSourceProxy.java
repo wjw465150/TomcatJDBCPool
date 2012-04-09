@@ -19,9 +19,11 @@ package org.apache.tomcat.jdbc.pool;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 import javax.sql.XAConnection;
 
@@ -47,7 +49,7 @@ public class DataSourceProxy implements PoolConfiguration {
 
     protected volatile ConnectionPool pool = null;
 
-    protected PoolConfiguration poolProperties = null;
+    protected volatile PoolConfiguration poolProperties = null;
 
     public DataSourceProxy() {
         this(new PoolProperties());
@@ -531,6 +533,14 @@ public class DataSourceProxy implements PoolConfiguration {
     @Override
     public void setUseEquals(boolean useEquals) {
         this.getPoolProperties().setUseEquals(useEquals);
+    }
+
+    /**
+     * no-op
+     * {@link javax.sql.DataSource#getParentLogger}
+     */
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -1224,6 +1234,54 @@ public class DataSourceProxy implements PoolConfiguration {
     @Override
     public boolean getRollbackOnReturn() {
         return getPoolProperties().getRollbackOnReturn();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setUseDisposableConnectionFacade(boolean useDisposableConnectionFacade) {
+        getPoolProperties().setUseDisposableConnectionFacade(useDisposableConnectionFacade);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getUseDisposableConnectionFacade() {
+        return getPoolProperties().getUseDisposableConnectionFacade();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLogValidationErrors(boolean logValidationErrors) {
+        getPoolProperties().setLogValidationErrors(logValidationErrors);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getLogValidationErrors() {
+        return getPoolProperties().getLogValidationErrors();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getPropagateInterruptState() {
+        return getPoolProperties().getPropagateInterruptState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPropagateInterruptState(boolean propagateInterruptState) {
+        getPoolProperties().setPropagateInterruptState(propagateInterruptState);
     }
 
 }

@@ -75,6 +75,7 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     public static final String SLOW_QUERY_NOTIFICATION = "SLOW QUERY";
     public static final String FAILED_QUERY_NOTIFICATION = "FAILED QUERY";
     public static final String SUSPECT_ABANDONED_NOTIFICATION = "SUSPECT CONNETION ABANDONED";
+    public static final String POOL_EMPTY = "POOL EMPTY";
 
     @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
@@ -776,6 +777,56 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     public boolean getRollbackOnReturn() {
         return getPoolProperties().getRollbackOnReturn();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setUseDisposableConnectionFacade(boolean useDisposableConnectionFacade) {
+        getPoolProperties().setUseDisposableConnectionFacade(useDisposableConnectionFacade);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getUseDisposableConnectionFacade() {
+        return getPoolProperties().getUseDisposableConnectionFacade();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLogValidationErrors(boolean logValidationErrors) {
+        getPoolProperties().setLogValidationErrors(logValidationErrors);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getLogValidationErrors() {
+        return getPoolProperties().getLogValidationErrors();
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getPropagateInterruptState() {
+        return getPoolProperties().getPropagateInterruptState();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPropagateInterruptState(boolean propagateInterruptState) {
+        getPoolProperties().setPropagateInterruptState(propagateInterruptState);
+    }
+
 
 
 }

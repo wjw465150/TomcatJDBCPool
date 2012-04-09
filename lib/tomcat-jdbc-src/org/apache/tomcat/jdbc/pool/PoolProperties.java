@@ -19,6 +19,7 @@ package org.apache.tomcat.jdbc.pool;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ import org.apache.juli.logging.LogFactory;
  * @author Filip Hanik
  *
  */
-public class PoolProperties implements PoolConfiguration {
+public class PoolProperties implements PoolConfiguration, Cloneable, Serializable {
     private static final Log log = LogFactory.getLog(PoolProperties.class);
 
     public static final int DEFAULT_MAX_ACTIVE = 100;
@@ -85,6 +86,9 @@ public class PoolProperties implements PoolConfiguration {
     protected boolean alternateUsernameAllowed = false;
     protected boolean commitOnReturn = false;
     protected boolean rollbackOnReturn = false;
+    protected boolean useDisposableConnectionFacade = true;
+    protected boolean logValidationErrors = false;
+    protected boolean propagateInterruptState = false;
 
 
     /**
@@ -1193,4 +1197,61 @@ public class PoolProperties implements PoolConfiguration {
     public boolean getRollbackOnReturn() {
         return this.rollbackOnReturn;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setUseDisposableConnectionFacade(boolean useDisposableConnectionFacade) {
+        this.useDisposableConnectionFacade = useDisposableConnectionFacade;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getUseDisposableConnectionFacade() {
+        return useDisposableConnectionFacade;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLogValidationErrors(boolean logValidationErrors) {
+        this.logValidationErrors = logValidationErrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getLogValidationErrors() {
+        return this.logValidationErrors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getPropagateInterruptState() {
+        return propagateInterruptState;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPropagateInterruptState(boolean propagateInterruptState) {
+        this.propagateInterruptState = propagateInterruptState;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        return super.clone();
+    }
+
+
+
 }

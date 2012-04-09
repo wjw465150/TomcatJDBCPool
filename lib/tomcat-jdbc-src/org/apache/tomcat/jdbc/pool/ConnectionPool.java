@@ -312,7 +312,12 @@ public class ConnectionPool {
             getProxyConstructor(con.getXAConnection() != null);
             //create the proxy
             //TODO possible optimization, keep track if this connection was returned properly, and don't generate a new facade
-            Connection connection = (Connection)proxyClassConstructor.newInstance(new Object[] { handler });
+            Connection connection = null;
+            if (getPoolProperties().getUseDisposableConnectionFacade() ) {
+                connection = (Connection)proxyClassConstructor.newInstance(new Object[] { new DisposableConnectionFacade(handler) });
+            } else {
+                connection = (Connection)proxyClassConstructor.newInstance(new Object[] {handler});
+            }
             //return the connection
             return connection;
         }catch (Exception x) {
@@ -376,7 +381,11 @@ public class ConnectionPool {
                     }
                 } //while
             } catch (InterruptedException ex) {
-                Thread.interrupted();
+                if (getPoolProperties().getPropagateInterruptState()) {
+                    Thread.currentThread().interrupt();
+                } else {
+                    Thread.interrupted();
+                }
             }
             if (pool.size()==0 && force && pool!=busy) pool = busy;
         }
@@ -621,7 +630,11 @@ public class ConnectionPool {
                 //retrieve an existing connection
                 con = idle.poll(timetowait, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
-                Thread.interrupted();//clear the flag, and bail out
+                if (getPoolProperties().getPropagateInterruptState()) {
+                    Thread.currentThread().interrupt();
+                } else {
+                    Thread.interrupted();
+                }
                 SQLException sx = new SQLException("Pool wait interrupted.");
                 sx.initCause(ex);
                 throw sx;
@@ -629,13 +642,19 @@ public class ConnectionPool {
                 waitcount.decrementAndGet();
             }
             if (maxWait==0 && con == null) { //no wait, return one if we have one
-                throw new SQLException("[" + Thread.currentThread().getName()+"] " +
+                if (jmxPool!=null) {
+                    jmxPool.notify(org.apache.tomcat.jdbc.pool.jmx.ConnectionPool.POOL_EMPTY, "Pool empty - no wait.");
+                }
+                throw new PoolExhaustedException("[" + Thread.currentThread().getName()+"] " +
                         "NoWait: Pool empty. Unable to fetch a connection, none available["+busy.size()+" in use].");
             }
             //we didn't get a connection, lets see if we timed out
             if (con == null) {
                 if ((System.currentTimeMillis() - now) >= maxWait) {
-                    throw new SQLException("[" + Thread.currentThread().getName()+"] " +
+                    if (jmxPool!=null) {
+                        jmxPool.notify(org.apache.tomcat.jdbc.pool.jmx.ConnectionPool.POOL_EMPTY, "Pool empty - timeout.");
+                    }
+                    throw new PoolExhaustedException("[" + Thread.currentThread().getName()+"] " +
                         "Timeout: Pool empty. Unable to fetch a connection in " + (maxWait / 1000) +
                         " seconds, none available[size:"+size.get() +"; busy:"+busy.size()+"; idle:"+idle.size()+"; lastwait:"+timetowait+"].");
                 } else {
@@ -656,10 +675,8 @@ public class ConnectionPool {
     protected PooledConnection createConnection(long now, PooledConnection notUsed, String username, String password) throws SQLException {
         //no connections where available we'll create one
         PooledConnection con = create(false);
-        if (username!=null) con.getAttributes().put(
-                PooledConnection.PROP_USER, username);
-        if (password!=null) con.getAttributes().put(
-                PooledConnection.PROP_PASSWORD, password);
+        if (username!=null) con.getAttributes().put(PooledConnection.PROP_USER, username);
+        if (password!=null) con.getAttributes().put(PooledConnection.PROP_PASSWORD, password);
         boolean error = false;
         try {
             //connect and validate the connection
@@ -1200,13 +1217,16 @@ public class ConnectionPool {
         unregisterCleaner(cleaner);
         cleaners.add(cleaner);
         if (poolCleanTimer == null) {
-            poolCleanTimer = new Timer("PoolCleaner["
-                    + System.identityHashCode(ConnectionPool.class
-                            .getClassLoader()) + ":"
-                    + System.currentTimeMillis() + "]", true);
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try {
+                Thread.currentThread().setContextClassLoader(ConnectionPool.class.getClassLoader());
+                poolCleanTimer = new Timer("PoolCleaner["+ System.identityHashCode(ConnectionPool.class.getClassLoader()) + ":"+
+                                           System.currentTimeMillis() + "]", true);
+            }finally {
+                Thread.currentThread().setContextClassLoader(loader);
+            }
         }
-        poolCleanTimer.scheduleAtFixedRate(cleaner, cleaner.sleepTime,
-                cleaner.sleepTime);
+        poolCleanTimer.scheduleAtFixedRate(cleaner, cleaner.sleepTime,cleaner.sleepTime);
     }
 
     private static synchronized void unregisterCleaner(PoolCleaner cleaner) {

@@ -104,6 +104,8 @@ public class PooledConnection {
 
     private HashMap<Object, Object> attributes = new HashMap<Object, Object>();
 
+    private volatile long connectionVersion=0;
+
     /**
      * Weak reference to cache the list of interceptors for this connection
      * so that we don't create a new list of interceptors each time we borrow
@@ -125,6 +127,11 @@ public class PooledConnection {
     public PooledConnection(PoolConfiguration prop, ConnectionPool parent) {
         poolProperties = prop;
         this.parent = parent;
+        connectionVersion = parent.getPoolVersion();
+    }
+
+    public long getConnectionVersion() {
+        return connectionVersion;
     }
 
     public boolean checkUser(String username, String password) {
@@ -231,10 +238,14 @@ public class PooledConnection {
     protected void connectUsingDriver() throws SQLException {
 
         try {
-            if (driver==null)
+            if (driver==null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Instantiating driver using class: "+poolProperties.getDriverClassName()+" [url="+poolProperties.getUrl()+"]");
+                }
                 driver = (java.sql.Driver) Class.forName(poolProperties.getDriverClassName(),
                                                          true, PooledConnection.class.getClassLoader()
                                                          ).newInstance();
+            }
         } catch (java.lang.Exception cn) {
             if (log.isDebugEnabled()) {
                 log.debug("Unable to instantiate JDBC driver.", cn);

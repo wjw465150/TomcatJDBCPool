@@ -110,6 +110,19 @@ public class ConnectionState extends JdbcInterceptor  {
 
     }
 
+
+    @Override
+    public void disconnected(ConnectionPool parent, PooledConnection con, boolean finalizing) {
+        //we are resetting, reset our defaults
+        autoCommit = null;
+        transactionIsolation = null;
+        readOnly = null;
+        catalog = null;
+        super.disconnected(parent, con, finalizing);
+    }
+
+
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String name = method.getName();
@@ -131,7 +144,7 @@ public class ConnectionState extends JdbcInterceptor  {
                 case 1:{result = transactionIsolation; break;}
                 case 2:{result = readOnly; break;}
                 case 3:{result = catalog; break;}
-                default: result = null;
+                default: // NOOP
             }
             //return cached result, if we have it
             if (result!=null) return result;

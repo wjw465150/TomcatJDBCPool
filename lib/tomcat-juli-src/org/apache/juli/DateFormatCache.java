@@ -41,7 +41,7 @@ import java.util.TimeZone;
  * <p>The cache can be created with a parent cache to build a cache hierarchy.
  * Access to the parent cache is threadsafe.</p>
  *
- * @version $Id: DateFormatCache.java 1185021 2011-10-17 06:23:02Z rjung $
+ * @version $Id: DateFormatCache.java 1402624 2012-10-26 19:27:06Z markt $
  */
 
 public class DateFormatCache {
@@ -101,14 +101,14 @@ public class DateFormatCache {
     private class Cache {
 
         /* Second formatted in most recent invocation */
-        private long previousSeconds = 0L;
+        private long previousSeconds = Long.MIN_VALUE;
         /* Formatted timestamp generated in most recent invocation */
         private String previousFormat = "";
 
         /* First second contained in cache */
-        private long first = 0L;
+        private long first = Long.MIN_VALUE;
         /* Last second contained in cache */
-        private long last = 0L;
+        private long last = Long.MIN_VALUE;
         /* Index of "first" in the cyclic cache */
         private int offset = 0;
         /* Helper object to be able to call SimpleDateFormat.format(). */
@@ -165,14 +165,16 @@ public class DateFormatCache {
                 for (int i = 1; i < seconds - last; i++) {
                     cache[(index + cacheSize - i) % cacheSize] = null;
                 }
-                first = seconds - cacheSize;
+                first = seconds - (cacheSize - 1);
                 last = seconds;
+                offset = (index + 1) % cacheSize;
             } else if (seconds < first) {
                 for (int i = 1; i < first - seconds; i++) {
                     cache[(index + i) % cacheSize] = null;
                 }
                 first = seconds;
-                last = seconds + cacheSize;
+                last = seconds + (cacheSize - 1);
+                offset = index;
             }
 
             /* Last step: format new timestamp either using

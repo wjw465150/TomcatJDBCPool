@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="Jar wjw-tomcat-jdbc.jar" default="main" basedir=".">
-  <property name="version" value="-7.0.39"/>
+  <property name="version" value="-7.0.40"/>
   <target name="main">
     <delete file="${basedir}/wjw-tomcat-jdbc${version}.jar"/>
     <jar destfile="${basedir}/wjw-tomcat-jdbc${version}.jar" manifest="${basedir}/MANIFEST.MF">

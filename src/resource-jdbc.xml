@@ -29,6 +29,6 @@
               driverClassName="com.mysql.jdbc.Driver"
               url="jdbc:mysql://127.0.0.1:3306/mysql"
               >
-  <jdbcInterceptors>StatementFinalizer;
-  SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=1)</jdbcInterceptors>
+  <jdbcInterceptors>StatementFinalizer;ResetAbandonedTimer;
+  SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=300)</jdbcInterceptors>
 </Resource>

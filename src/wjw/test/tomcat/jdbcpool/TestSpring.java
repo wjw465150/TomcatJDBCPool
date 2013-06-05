@@ -1,21 +1,20 @@
 package wjw.test.tomcat.jdbcpool;
 
-import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+//@wjw_note: 要使用Tomcat的ClassLoaderLogManager来替代JDK的LogManager,必须在启动java虚拟机时
+//传递参数:-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager Djava.util.logging.config.file=./logging.properties
 public class TestSpring {
   private static Log log = LogFactory.getLog(TestSpring.class);
 
   public static void main(String[] args) {
     try {
-      java.util.logging.LogManager.getLogManager().readConfiguration(new FileInputStream("./logging.properties")); //java.util.logging.LogManager.getLogManager().readConfiguration(TestMain.class.getResourceAsStream("/logging.properties"));
       log.info("开始:" + TestSpring.class.getCanonicalName());
 
       ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");

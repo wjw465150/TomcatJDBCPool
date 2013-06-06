@@ -30,5 +30,5 @@
               url="jdbc:mysql://127.0.0.1:3306/mysql"
               >
   <jdbcInterceptors>StatementFinalizer;ResetAbandonedTimer;
-  SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=300)</jdbcInterceptors>
+  SlowQueryReport(notifyPool=false,maxQueries=1000,threshold=300)</jdbcInterceptors>
 </Resource>

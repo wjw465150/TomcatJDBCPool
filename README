@@ -1,15 +1,37 @@
-wjw-tomcat-jdbc.jar°üº¬ÁËÈ«²¿µÄtomcat jdbc poolµÄÎÄ¼ş,²¢ÔÚorg\apache\tomcat\jdbc\ext\Ä¿Â¼ÏÂÔö¼ÓÁËÒ»¸öTomcatDataSourceFactory.classÀà,
-TomcatDataSourceFactoryÀàµÄÄ¿µÄ¾ÍÊÇÄÜ´Ó¼æÈİtomcatµÄserver.xmlµÄ<Resource>±êÇ©Àï´´½¨org.apache.tomcat.jdbc.pool.DataSource;
-²¢°Ñ<Resource>±êÇ©ÀïµÄÊôĞÔÖµ¸³¸øorg.apache.tomcat.jdbc.pool.DataSource,
-Í¬Ê±Ğ£Ñé<Resource>ÀïµÄÊôĞÔÃûÊÇ·ñ´æÔÚÓÚtomcat jdbc poolµÄÊôĞÔ¼¯Àï,Èç¹û²»´æÔÚ»á¸ø³ö¾¯¸æ,·ÀÖ¹ÅäÖÃÊôĞÔÃûÊ±³öÏÖµÄÊäÈë´Ë´íÎó!
-ÀıÈç:ÊôĞÔÎÄ¼şÃû:resource-jdbc.xml,ÄÚÈİÊÇ:
+Tomcat åœ¨ 7.0 ä»¥å‰çš„ç‰ˆæœ¬éƒ½æ˜¯ä½¿ç”¨commons-dbcpåšä¸ºè¿æ¥æ± çš„å®ç°ï¼Œä½†æ˜¯ dbcpå­˜åœ¨ä¸€äº›é—®é¢˜ï¼š 
+> ï¼ˆ1ï¼‰dbcp æ˜¯å•çº¿ç¨‹çš„ï¼Œä¸ºäº†ä¿è¯çº¿ç¨‹å®‰å…¨ä¼šé”æ•´ä¸ªè¿æ¥æ±    
+> ï¼ˆ2ï¼‰dbcp æ€§èƒ½ä¸ä½³   
+> ï¼ˆ3ï¼‰dbcp å¤ªå¤æ‚ï¼Œè¶…è¿‡ 60 ä¸ªç±»ï¼Œå‘å±•æ»åã€‚   
+>
+
+å› æ­¤ï¼Œé€šå¸¸J2EEä¸­è¿˜ä¼šä½¿ç”¨å…¶å®ƒçš„é«˜æ€§èƒ½è¿æ¥æ± ï¼Œå¦‚ C3P0ï¼Œè¿˜æœ‰é˜¿é‡Œç³»çš„ druid ç­‰ã€‚ä¸ºæ­¤ï¼ŒTomcat ä» 7.0 å¼€å§‹å¼•å…¥ä¸€ä¸ªæ–°çš„æ¨¡å—ï¼š `Tomcat jdbc pool `
+>
+tomcat jdbc pool è¿‘ä¹å…¼å®¹ dbcp ï¼Œæ€§èƒ½æ›´é«˜ 
+å¼‚æ­¥æ–¹å¼è·å–è¿æ¥ 	
+tomcat jdbc pool æ˜¯ tomcat çš„ä¸€ä¸ªæ¨¡å—ï¼ŒåŸºäº tomcat JULIï¼Œä½¿ç”¨ Tomcat çš„æ—¥å¿—æ¡†æ¶ 	
+ä½¿ç”¨ javax.sql.PooledConnection æ¥å£è·å–è¿æ¥ 	
+æ”¯æŒé«˜å¹¶å‘åº”ç”¨ç¯å¢ƒ 	
+è¶…ç®€å•ï¼Œæ ¸å¿ƒæ–‡ä»¶åªæœ‰8ä¸ªï¼Œæ¯” c3p0 è¿˜å°‘ 	
+æ›´å¥½çš„ç©ºé—²è¿æ¥å¤„ç†æœºåˆ¶ 	
+æ”¯æŒ JMX 	
+æ”¯æŒ XA Connectionã€‚ 	
+tomcat jdbc pool å¯åœ¨ Tomcat ä¸­ç›´æ¥ä½¿ç”¨ï¼Œä¹Ÿå¯ä»¥åœ¨ç‹¬ç«‹çš„åº”ç”¨ä¸­ä½¿ç”¨ã€‚ 	
+>
+
+`wjw-tomcat-jdbc.jar`æ˜¯ç®€å•çš„æ‰©å±•!åŒ…å«äº†å…¨éƒ¨çš„tomcat jdbc poolçš„æ–‡ä»¶,å¹¶åœ¨org\apache\tomcat\jdbc\ext\ç›®å½•ä¸‹å¢åŠ äº†ä¸€ä¸ªTomcatDataSourceFactory.classç±»,
+TomcatDataSourceFactoryç±»çš„ç›®çš„å°±æ˜¯èƒ½ä»tomcatç‹¬ç«‹å‡ºæ¥å¹¶å…¼å®¹tomcatçš„server.xmlçš„<Resource>æ ‡ç­¾é‡Œåˆ›å»ºorg.apache.tomcat.jdbc.pool.DataSource;
+å¹¶æŠŠ<Resource>æ ‡ç­¾é‡Œçš„å±æ€§å€¼èµ‹ç»™org.apache.tomcat.jdbc.pool.DataSource,
+åŒæ—¶æ ¡éªŒ<Resource>é‡Œçš„å±æ€§åæ˜¯å¦å­˜åœ¨äºtomcat jdbc poolçš„å±æ€§é›†é‡Œ,å¦‚æœä¸å­˜åœ¨ä¼šç»™å‡ºè­¦å‘Š,é˜²æ­¢é…ç½®å±æ€§åæ—¶å‡ºç°çš„è¾“å…¥æ­¤é”™è¯¯!
+###### ä¾‹å¦‚:å±æ€§æ–‡ä»¶å:resource-jdbc.xml,å†…å®¹æ˜¯:
+>
+```
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ËµÃ÷: tomcat jdbc poolµÄ²ÎÊı,¼È¿ÉÒÔ×÷ÎªResourceµÄÊôĞÔ,Ò²¿ÉÒÔ×÷ÎªResourceµÄ×ÓÔªËØ;
-  ÀıÈç: <Resource driverClassName="com.mysql.jdbc.Driver"/>  
-     »òÕß <Resource><driverClassName>com.mysql.jdbc.Driver</driverClassName></Resource>
-    Èç¹ûÍ¬Ê±³öÏÖ,ÄÇÃ´ÔªËØÖµ»á¸²¸ÇÊôĞÔÖµ.
--->
+> <!--
+>   è¯´æ˜: tomcat jdbc poolçš„å‚æ•°,æ—¢å¯ä»¥ä½œä¸ºResourceçš„å±æ€§,ä¹Ÿå¯ä»¥ä½œä¸ºResourceçš„å­å…ƒç´ ;
+>   ä¾‹å¦‚: <Resource driverClassName="com.mysql.jdbc.Driver"/>  
+>      æˆ–è€… <Resource><driverClassName>com.mysql.jdbc.Driver</driverClassName></Resource>
+>     å¦‚æœåŒæ—¶å‡ºç°,é‚£ä¹ˆå…ƒç´ å€¼ä¼šè¦†ç›–å±æ€§å€¼.
+> -->
 <Resource name="jdbc/TestDB"
               auth="Container"
               type="javax.sql.DataSource"
@@ -37,10 +59,25 @@ TomcatDataSourceFactoryÀàµÄÄ¿µÄ¾ÍÊÇÄÜ´Ó¼æÈİtomcatµÄserver.xmlµÄ<Resource>±êÇ©Àï´
   <jdbcInterceptors>StatementFinalizer;
   SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=1)</jdbcInterceptors>
 </Resource>
-java´úÂëÊÇ:      javax.sql.DataSource datasource = TomcatDataSourceFactory.createDataSource("classpath:resource-jdbc.xml");
-ÔÚSpring»·¾³ÀïµÄÅäÖÃ·½Ê½ÈçÈçÏÂ:
+```
+>
+###### javaä»£ç æ˜¯: 
+>
+`javax.sql.DataSource datasource = TomcatDataSourceFactory.createDataSource("classpath:some/resource/path/resource-jdbc.xml");`	
+æˆ–è€…
+`javax.sql.DataSource datasource = TomcatDataSourceFactory.createDataSource("file:/some/resource/path/resource-jdbc.xml");`
+æˆ–è€…
+`javax.sql.DataSource datasource = TomcatDataSourceFactory.createDataSource("http://some/resource/path/resource-jdbc.xml");`
+
+>
+
+###### åœ¨Springç¯å¢ƒé‡Œçš„é…ç½®æ–¹å¼å¦‚å¦‚ä¸‹:
+>
+```
    <bean id="dataSource" class="org.apache.tomcat.jdbc.ext.TomcatDataSourceFactory" 
          factory-method="createDataSource"
          destroy-method="close">
      <constructor-arg value="classpath:resource-jdbc.xml" />
    </bean>
+```
+>

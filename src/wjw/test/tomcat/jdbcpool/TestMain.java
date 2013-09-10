@@ -46,7 +46,7 @@ public class TestMain {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
   }
 

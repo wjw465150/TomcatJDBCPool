@@ -524,6 +524,19 @@ public interface PoolConfiguration {
     public void setValidationQuery(String validationQuery);
 
     /**
+     * The timeout in seconds before a connection validation queries fail.
+     * A value less than or equal to zero will disable this feature.  Defaults to -1.
+     * @return the timeout value in seconds
+     */
+    public int getValidationQueryTimeout();
+
+    /**
+     * The timeout in seconds before a connection validation queries fail.
+     * A value less than or equal to zero will disable this feature.  Defaults to -1.
+     */
+    public void setValidationQueryTimeout(int validationQueryTimeout);
+
+    /**
      * Return the name of the optional validator class - may be null.
      *
      * @return the name of the optional validator class - may be null
@@ -863,5 +876,17 @@ public interface PoolConfiguration {
      * @param propagateInterruptState - set to true to not clear, but propagate, a threads interrupted state.
      */
     public void setPropagateInterruptState(boolean propagateInterruptState);
+
+    /**
+     * Set to true if you want to ignore error of connection creation while initializing the pool.
+     * Set to false if you want to fail the initialization of the pool by throwing exception.
+     * @param ignoreExceptionOnPreLoad set to true if you want to ignore error of connection creation while initializing the pool.
+     */
+    public void setIgnoreExceptionOnPreLoad(boolean ignoreExceptionOnPreLoad);
+
+    /**
+     * @see PoolConfiguration#setIgnoreExceptionOnPreLoad(boolean)
+     */
+    public boolean isIgnoreExceptionOnPreLoad();
 
 }

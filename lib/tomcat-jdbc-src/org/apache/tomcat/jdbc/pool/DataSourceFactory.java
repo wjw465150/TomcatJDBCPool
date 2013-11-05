@@ -80,6 +80,7 @@ public class DataSourceFactory implements ObjectFactory {
     protected static final String PROP_TESTWHILEIDLE = "testWhileIdle";
     protected static final String PROP_TESTONCONNECT = "testOnConnect";
     protected static final String PROP_VALIDATIONQUERY = "validationQuery";
+    protected static final String PROP_VALIDATIONQUERY_TIMEOUT = "validationQueryTimeout";
     protected static final String PROP_VALIDATOR_CLASS_NAME = "validatorClassName";
 
     protected static final String PROP_NUMTESTSPEREVICTIONRUN = "numTestsPerEvictionRun";
@@ -122,6 +123,8 @@ public class DataSourceFactory implements ObjectFactory {
 
     protected static final String PROP_PROPAGATEINTERRUPTSTATE = "propagateInterruptState";
 
+    protected static final String PROP_IGNOREEXCEPTIONONPRELOAD = "ignoreExceptionOnPreLoad";
+
     public static final int UNKNOWN_TRANSACTIONISOLATION = -1;
 
     public static final String OBJECT_NAME = "object_name";
@@ -149,6 +152,7 @@ public class DataSourceFactory implements ObjectFactory {
         PROP_URL,
         PROP_USERNAME,
         PROP_VALIDATIONQUERY,
+        PROP_VALIDATIONQUERY_TIMEOUT,
         PROP_VALIDATOR_CLASS_NAME,
         PROP_VALIDATIONINTERVAL,
         PROP_ACCESSTOUNDERLYINGCONNECTIONALLOWED,
@@ -175,7 +179,8 @@ public class DataSourceFactory implements ObjectFactory {
         PROP_ROLLBACKONRETURN,
         PROP_USEDISPOSABLECONNECTIONFACADE,
         PROP_LOGVALIDATIONERRORS,
-        PROP_PROPAGATEINTERRUPTSTATE
+        PROP_PROPAGATEINTERRUPTSTATE,
+        PROP_IGNOREEXCEPTIONONPRELOAD
     };
 
     // -------------------------------------------------- ObjectFactory Methods
@@ -367,6 +372,11 @@ public class DataSourceFactory implements ObjectFactory {
             poolProperties.setValidationQuery(value);
         }
 
+        value = properties.getProperty(PROP_VALIDATIONQUERY_TIMEOUT);
+        if (value != null) {
+            poolProperties.setValidationQueryTimeout(Integer.parseInt(value));
+        }
+
         value = properties.getProperty(PROP_VALIDATOR_CLASS_NAME);
         if (value != null) {
             poolProperties.setValidatorClassName(value);
@@ -512,6 +522,11 @@ public class DataSourceFactory implements ObjectFactory {
         value = properties.getProperty(PROP_PROPAGATEINTERRUPTSTATE);
         if (value != null) {
             poolProperties.setPropagateInterruptState(Boolean.parseBoolean(value));
+        }
+
+        value = properties.getProperty(PROP_IGNOREEXCEPTIONONPRELOAD);
+        if (value != null) {
+            poolProperties.setIgnoreExceptionOnPreLoad(Boolean.parseBoolean(value));
         }
 
         return poolProperties;

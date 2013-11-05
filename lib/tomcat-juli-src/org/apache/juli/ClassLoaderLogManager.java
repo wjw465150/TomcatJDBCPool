@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessControlException;
 import java.security.AccessController;
@@ -43,8 +44,14 @@ import java.util.logging.Logger;
 
 /**
  * Per classloader LogManager implementation.
+ *
+ * For light debugging, set the system property
+ * <code>org.apache.juli.ClassLoaderLogManager.debug=true</code>.
+ * Short configuration information will be sent to <code>System.err</code>.
  */
 public class ClassLoaderLogManager extends LogManager {
+    public static final String DEBUG_PROPERTY =
+            ClassLoaderLogManager.class.getName() + ".debug";
 
     private final class Cleaner extends Thread {
         
@@ -244,12 +251,31 @@ public class ClassLoaderLogManager extends LogManager {
      */    
     @Override
     public String getProperty(String name) {
-        ClassLoader classLoader = Thread.currentThread()
-            .getContextClassLoader();
         String prefix = this.prefix.get();
+        String result = null;
+
+        // If a prefix is defined look for a prefixed property first
         if (prefix != null) {
-            name = prefix + name;
+            result = findProperty(prefix + name);
         }
+
+        // If there is no prefix or no property match with the prefix try just
+        // the name
+        if (result == null) {
+            result = findProperty(name);
+        }
+
+        // Simple property replacement (mostly for folder names)
+        if (result != null) {
+            result = replace(result);
+        }
+        return result;
+    }
+
+
+    private String findProperty(String name) {
+        ClassLoader classLoader = Thread.currentThread()
+                .getContextClassLoader();
         ClassLoaderLogInfo info = getClassLoaderInfo(classLoader);
         String result = info.props.getProperty(name);
         // If the property was not found, and the current classloader had no 
@@ -271,13 +297,9 @@ public class ClassLoaderLogManager extends LogManager {
                 result = super.getProperty(name);
             }
         }
-        // Simple property replacement (mostly for folder names)
-        if (result != null) {
-            result = replace(result);
-        }
         return result;
     }
-    
+
     
     @Override
     public void readConfiguration()
@@ -400,9 +422,23 @@ public class ClassLoaderLogManager extends LogManager {
         // Special case for URL classloaders which are used in containers: 
         // only look in the local repositories to avoid redefining loggers 20 times
         try {
-            if ((classLoader instanceof URLClassLoader) 
-                    && (((URLClassLoader) classLoader).findResource("logging.properties") != null)) {
-                is = classLoader.getResourceAsStream("logging.properties");
+            if (classLoader instanceof URLClassLoader) {
+                URL logConfig = ((URLClassLoader)classLoader).findResource("logging.properties");
+
+                if(null != logConfig) {
+                    if(Boolean.getBoolean(DEBUG_PROPERTY))
+                        System.err.println(getClass().getName()
+                                           + ".readConfiguration(): "
+                                           + "Found logging.properties at "
+                                           + logConfig);
+
+                    is = classLoader.getResourceAsStream("logging.properties");
+                } else {
+                    if(Boolean.getBoolean(DEBUG_PROPERTY))
+                        System.err.println(getClass().getName()
+                                           + ".readConfiguration(): "
+                                           + "Found no logging.properties");
+                }
             }
         } catch (AccessControlException ace) {
             // No permission to configure logging in context

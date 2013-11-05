@@ -392,8 +392,6 @@ public class ConnectionPool {
             } catch (InterruptedException ex) {
                 if (getPoolProperties().getPropagateInterruptState()) {
                     Thread.currentThread().interrupt();
-                } else {
-                    Thread.interrupted();
                 }
             }
             if (pool.size()==0 && force && pool!=busy) pool = busy;
@@ -489,9 +487,12 @@ public class ConnectionPool {
             } //for
 
         } catch (SQLException x) {
-            if (jmxPool!=null) jmxPool.notify(org.apache.tomcat.jdbc.pool.jmx.ConnectionPool.NOTIFY_INIT, getStackTrace(x));
-            close(true);
-            throw x;
+            log.error("Unable to create initial connections of pool.", x);
+            if (!poolProperties.isIgnoreExceptionOnPreLoad()) {
+                if (jmxPool!=null) jmxPool.notify(org.apache.tomcat.jdbc.pool.jmx.ConnectionPool.NOTIFY_INIT, getStackTrace(x));
+                close(true);
+                throw x;
+            }
         } finally {
             //return the members as idle to the pool
             for (int i = 0; i < initialPool.length; i++) {
@@ -650,8 +651,6 @@ public class ConnectionPool {
             } catch (InterruptedException ex) {
                 if (getPoolProperties().getPropagateInterruptState()) {
                     Thread.currentThread().interrupt();
-                } else {
-                    Thread.interrupted();
                 }
                 SQLException sx = new SQLException("Pool wait interrupted.");
                 sx.initCause(ex);
@@ -713,7 +712,7 @@ public class ConnectionPool {
             } else {
                 //validation failed, make sure we disconnect
                 //and clean up
-                error =true;
+                throw new SQLException("Validation Query Failed, enable logValidationErrors for more details.");
             } //end if
         } catch (Exception e) {
             error = true;
@@ -733,7 +732,6 @@ public class ConnectionPool {
             }
             con.unlock();
         }//catch
-        return null;
     }
 
     /**

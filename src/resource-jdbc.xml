@@ -12,7 +12,7 @@
               testWhileIdle="true"
               testOnBorrow="true"
               testOnReturn="false"
-              validationQuery="SELECT 1"
+              validationQuery="SELECT 1 FROM DUAL"
               validationInterval="30000"
               timeBetweenEvictionRunsMillis="30000"
               maxActive="100"

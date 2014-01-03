@@ -291,9 +291,9 @@ public abstract class TomcatDataSourceFactory {
         }
         fieldName = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
         fieldMap.put(fieldName, fieldName);
-        if (fieldName.equals("name")) { //@wjw_note: 忽略name属性,防止在JMX里如果有多个重名的连接池而引起的冲突
-          continue;
-        }
+//        if (fieldName.equals("name")) { //@wjw_note: 忽略name属性,防止在JMX里如果有多个重名的连接池而引起的冲突
+//          continue;
+//        }
 
         if (!properties.containsKey(fieldName)) {
           continue;

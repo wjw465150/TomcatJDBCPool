@@ -77,3 +77,37 @@ TomcatDataSourceFactory类的目的就是能从tomcat独立出来并兼容tomcat
      <constructor-arg value="classpath:resource-jdbc.xml" />
    </bean>
 ```
+或者
+```xml
+   <bean id="dataSource" class="org.apache.tomcat.jdbc.ext.TomcatDataSourceFactory" 
+         factory-method="createDataSource"
+         destroy-method="close">
+      <constructor-arg>
+        <props>
+          <prop key="auth">Container</prop>
+          <prop key="type">javax.sql.DataSource</prop>
+          <prop key="factory">org.apache.tomcat.jdbc.pool.DataSourceFactory</prop>
+          <prop key="testWhileIdle">true</prop>
+          <prop key="testOnBorrow">true</prop>
+          <prop key="testOnReturn">false</prop>
+          <prop key="validationQuery">SELECT 1 FROM DUAL</prop>
+          <prop key="validationInterval">30000</prop>
+          <prop key="timeBetweenEvictionRunsMillis">30000</prop>
+          <prop key="maxActive">10</prop>
+          <prop key="minIdle">10</prop>
+          <prop key="maxWait">10000</prop>
+          <prop key="initialSize">5</prop>
+          <prop key="removeAbandonedTimeout">60</prop>
+          <prop key="removeAbandoned">true</prop>
+          <prop key="logAbandoned">true</prop>
+          <prop key="minEvictableIdleTimeMillis">30000</prop>
+          <prop key="jmxEnabled">true</prop>
+          <prop key="username">root</prop>
+          <prop key="password">root123</prop>
+          <prop key="driverClassName">com.mysql.jdbc.Driver</prop>
+          <prop key="url">jdbc:mysql://192.168.1.2:3306/test?rewriteBatchedStatements=true&amp;characterEncoding=utf-8</prop>
+          <prop key="jdbcInterceptors">StatementFinalizer;SlowQueryReportJmx(notifyPool=false,maxQueries=1000,threshold=300)</prop>
+        </props> 
+      </constructor-arg>
+   </bean>
+```

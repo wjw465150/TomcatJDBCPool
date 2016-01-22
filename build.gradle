@@ -1,0 +1,74 @@
+apply plugin: 'java'
+
+defaultTasks 'makeOneJar'
+
+version = "7.0.64"
+ext {
+  buildName = "wjw-tomcat-jdbc"
+}
+
+//repositories {
+//mavenCentral()
+//flatDir(dirs: file('jarsDerectory'))
+//}
+
+dependencies {
+  compile files("lib/Spring/commons-logging.jar")
+  compile files("lib/Spring/log4j-wjw.jar")
+  compile files("lib/Spring/spring.jar")
+  
+  compile files("lib/tomcat-jdbc.jar")
+  compile files("lib/tomcat-juli.jar")
+  compile files("lib/wjw-mysql-connector-java-5.1.6-bin.jar")
+}
+
+sourceSets {
+	sourceCompatibility = 1.6
+	targetCompatibility = 1.6
+	main {
+		java {
+			srcDirs = ['src']
+		}
+		resources {
+			srcDirs = ['src']
+		}
+	}
+}
+
+jar {  //禁止执行Jar Task
+  onlyIf { Task task ->
+    return false
+  }
+}
+
+javadoc {
+  destinationDir = file("${projectDir}/doc-api")
+  title = "Tomcat jdbc pool"
+  source = sourceSets['main'].java.srcDirs + ['lib/tomcat-jdbc-src']
+  includes = ['org/apache/tomcat/jdbc/**/*.java']
+
+  doLast {
+    clean.execute()
+  }
+}
+
+task makeOneJar(dependsOn: compileJava) << {
+	def basedir="${projectDir}"
+	def oneJarName="${project.buildName}-${project.version}.jar"
+	
+	ant.echo("Ant Build OneJar:${oneJarName} Start...")
+	
+	ant.delete(file: "${basedir}/${oneJarName}")
+	
+	ant.jar(destfile: "${basedir}/${oneJarName}", manifest: "${basedir}/MANIFEST.MF") {
+		fileset(dir: "${sourceSets['main'].output.classesDir}") {
+			include(name: "org/**")
+		}
+		zipfileset(src: "lib/tomcat-jdbc.jar") {
+		}
+	}
+
+	ant.echo("Ant Build OneJar:${oneJarName} End!")
+	
+	javadoc.execute()
+}

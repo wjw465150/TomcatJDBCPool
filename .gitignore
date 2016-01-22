@@ -1,3 +1,4 @@
+/.gradle/
 /wjw-tomcat-jdbc*.jar
 /bin
 /doc-api

@@ -20,6 +20,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -418,26 +420,7 @@ public class ConnectionPool {
         poolProperties = properties;
 
         //make sure the pool is properly configured
-        if (properties.getMaxActive()<1) {
-            log.warn("maxActive is smaller than 1, setting maxActive to: "+PoolProperties.DEFAULT_MAX_ACTIVE);
-            properties.setMaxActive(PoolProperties.DEFAULT_MAX_ACTIVE);
-        }
-        if (properties.getMaxActive()<properties.getInitialSize()) {
-            log.warn("initialSize is larger than maxActive, setting initialSize to: "+properties.getMaxActive());
-            properties.setInitialSize(properties.getMaxActive());
-        }
-        if (properties.getMinIdle()>properties.getMaxActive()) {
-            log.warn("minIdle is larger than maxActive, setting minIdle to: "+properties.getMaxActive());
-            properties.setMinIdle(properties.getMaxActive());
-        }
-        if (properties.getMaxIdle()>properties.getMaxActive()) {
-            log.warn("maxIdle is larger than maxActive, setting maxIdle to: "+properties.getMaxActive());
-            properties.setMaxIdle(properties.getMaxActive());
-        }
-        if (properties.getMaxIdle()<properties.getMinIdle()) {
-            log.warn("maxIdle is smaller than minIdle, setting maxIdle to: "+properties.getMinIdle());
-            properties.setMaxIdle(properties.getMinIdle());
-        }
+        checkPoolConfiguration(properties);
 
         //make space for 10 extra in case we flow over a bit
         busy = new LinkedBlockingQueue<PooledConnection>();
@@ -504,6 +487,29 @@ public class ConnectionPool {
         closed = false;
     }
 
+    public void checkPoolConfiguration(PoolConfiguration properties) {
+        //make sure the pool is properly configured
+        if (properties.getMaxActive()<1) {
+            log.warn("maxActive is smaller than 1, setting maxActive to: "+PoolProperties.DEFAULT_MAX_ACTIVE);
+            properties.setMaxActive(PoolProperties.DEFAULT_MAX_ACTIVE);
+        }
+        if (properties.getMaxActive()<properties.getInitialSize()) {
+            log.warn("initialSize is larger than maxActive, setting initialSize to: "+properties.getMaxActive());
+            properties.setInitialSize(properties.getMaxActive());
+        }
+        if (properties.getMinIdle()>properties.getMaxActive()) {
+            log.warn("minIdle is larger than maxActive, setting minIdle to: "+properties.getMaxActive());
+            properties.setMinIdle(properties.getMaxActive());
+        }
+        if (properties.getMaxIdle()>properties.getMaxActive()) {
+            log.warn("maxIdle is larger than maxActive, setting maxIdle to: "+properties.getMaxActive());
+            properties.setMaxIdle(properties.getMaxActive());
+        }
+        if (properties.getMaxIdle()<properties.getMinIdle()) {
+            log.warn("maxIdle is smaller than minIdle, setting maxIdle to: "+properties.getMinIdle());
+            properties.setMaxIdle(properties.getMinIdle());
+        }
+    }
 
     public void initializePoolCleaner(PoolConfiguration properties) {
         //if the evictor thread is supposed to run, start it now
@@ -550,9 +556,11 @@ public class ConnectionPool {
     }
 
     /**
-     * thread safe way to abandon a connection
-     * signals a connection to be abandoned.
-     * this will disconnect the connection, and log the stack trace if logAbanded=true
+     * Thread safe way to suspect a connection. Similar to
+     * {@link #abandon(PooledConnection)}, but instead of actually abandoning
+     * the connection, this will log a warning and set the suspect flag on the
+     * {@link PooledConnection} if logAbandoned=true
+     *
      * @param con PooledConnection
      */
     protected void suspect(PooledConnection con) {
@@ -622,7 +630,6 @@ public class ConnectionPool {
             if (con!=null) {
                 //configure the connection and return it
                 PooledConnection result = borrowConnection(now, con, username, password);
-                //null should never be returned, but was in a previous impl.
                 if (result!=null) return result;
             }
 
@@ -760,20 +767,9 @@ public class ConnectionPool {
             }
 
             if (!con.isDiscarded() && !con.isInitialized()) {
-                //attempt to connect
-                try {
-                    con.connect();
-                } catch (Exception x) {
-                    release(con);
-                    setToNull = true;
-                    if (x instanceof SQLException) {
-                        throw (SQLException)x;
-                    } else {
-                        SQLException ex  = new SQLException(x.getMessage());
-                        ex.initCause(x);
-                        throw ex;
-                    }
-                }
+                //here it states that the connection not discarded, but the connection is null
+                //don't attempt a connect here. It will be done during the reconnect.
+                usercheck = false;
             }
 
             if (usercheck) {
@@ -797,7 +793,10 @@ public class ConnectionPool {
             //the connection shouldn't have to poll again.
             try {
                 con.reconnect();
-                if (con.validate(PooledConnection.VALIDATE_INIT)) {
+                int validationMode = getPoolProperties().isTestOnConnect() || getPoolProperties().getInitSQL()!=null ?
+                        PooledConnection.VALIDATE_INIT :
+                        PooledConnection.VALIDATE_BORROW;
+                if (con.validate(validationMode)) {
                     //set the timestamp
                     con.setTimestamp(now);
                     if (getPoolProperties().isLogAbandoned()) {
@@ -810,8 +809,6 @@ public class ConnectionPool {
                     return con;
                 } else {
                     //validation failed.
-                    release(con);
-                    setToNull = true;
                     throw new SQLException("Failed to validate a newly established connection.");
                 }
             } catch (Exception x) {
@@ -894,7 +891,16 @@ public class ConnectionPool {
         if (con != null) {
             try {
                 con.lock();
-
+                if (con.isSuspect()) {
+                    if (poolProperties.isLogAbandoned() && log.isInfoEnabled()) {
+                        log.info("Connection(" + con + ") that has been marked suspect was returned."
+                                + " The processing time is " + (System.currentTimeMillis()-con.getTimestamp()) + " ms.");
+                    }
+                    if (jmxPool!=null) {
+                        jmxPool.notify(org.apache.tomcat.jdbc.pool.jmx.ConnectionPool.SUSPECT_RETURNED_NOTIFICATION,
+                                "Connection(" + con + ") that has been marked suspect was returned.");
+                    }
+                }
                 if (busy.remove(con)) {
 
                     if (!shouldClose(con,PooledConnection.VALIDATE_RETURN)) {
@@ -930,6 +936,7 @@ public class ConnectionPool {
      * @return true if the connection should be abandoned
      */
     protected boolean shouldAbandon() {
+        if (!poolProperties.isRemoveAbandoned()) return false;
         if (poolProperties.getAbandonWhenPercentageFull()==0) return true;
         float used = busy.size();
         float max  = poolProperties.getMaxActive();
@@ -950,9 +957,9 @@ public class ConnectionPool {
                 boolean setToNull = false;
                 try {
                     con.lock();
-                    //the con has been returned to the pool
+                    //the con has been returned to the pool or released
                     //ignore it
-                    if (idle.contains(con))
+                    if (idle.contains(con) || con.isReleased())
                         continue;
                     long time = con.getTimestamp();
                     long now = System.currentTimeMillis();
@@ -960,7 +967,7 @@ public class ConnectionPool {
                         busy.remove(con);
                         abandon(con);
                         setToNull = true;
-                    } else if (sto > 0 && (now - time) > (sto*1000)) {
+                    } else if (sto > 0 && (now - time) > (sto * 1000L)) {
                         suspect(con);
                     } else {
                         //do nothing
@@ -1286,13 +1293,16 @@ public class ConnectionPool {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             try {
                 Thread.currentThread().setContextClassLoader(ConnectionPool.class.getClassLoader());
-                poolCleanTimer = new Timer("PoolCleaner["+ System.identityHashCode(ConnectionPool.class.getClassLoader()) + ":"+
-                                           System.currentTimeMillis() + "]", true);
-            }finally {
+                // Create the timer thread in a PrivilegedAction so that a
+                // reference to the web application class loader is not created
+                // via Thread.inheritedAccessControlContext
+                PrivilegedAction<Timer> pa = new PrivilegedNewTimer();
+                poolCleanTimer = AccessController.doPrivileged(pa);
+            } finally {
                 Thread.currentThread().setContextClassLoader(loader);
             }
         }
-        poolCleanTimer.scheduleAtFixedRate(cleaner, cleaner.sleepTime,cleaner.sleepTime);
+        poolCleanTimer.schedule(cleaner, cleaner.sleepTime,cleaner.sleepTime);
     }
 
     private static synchronized void unregisterCleaner(PoolCleaner cleaner) {
@@ -1306,6 +1316,14 @@ public class ConnectionPool {
                     poolCleanTimer = null;
                 }
             }
+        }
+    }
+
+    private static class PrivilegedNewTimer implements PrivilegedAction<Timer> {
+        @Override
+        public Timer run() {
+            return new Timer("Tomcat JDBC Pool Cleaner["+ System.identityHashCode(ConnectionPool.class.getClassLoader()) + ":"+
+                    System.currentTimeMillis() + "]", true);
         }
     }
 
@@ -1324,7 +1342,6 @@ public class ConnectionPool {
     protected static class PoolCleaner extends TimerTask {
         protected WeakReference<ConnectionPool> pool;
         protected long sleepTime;
-        protected volatile long lastRun = 0;
 
         PoolCleaner(ConnectionPool pool, long sleepTime) {
             this.pool = new WeakReference<ConnectionPool>(pool);
@@ -1342,11 +1359,10 @@ public class ConnectionPool {
             ConnectionPool pool = this.pool.get();
             if (pool == null) {
                 stopRunning();
-            } else if (!pool.isClosed() &&
-                    (System.currentTimeMillis() - lastRun) > sleepTime) {
-                lastRun = System.currentTimeMillis();
+            } else if (!pool.isClosed()) {
                 try {
-                    if (pool.getPoolProperties().isRemoveAbandoned())
+                    if (pool.getPoolProperties().isRemoveAbandoned()
+                            || pool.getPoolProperties().getSuspectTimeout() > 0)
                         pool.checkAbandoned();
                     if (pool.getPoolProperties().getMinIdle() < pool.idle
                             .size())

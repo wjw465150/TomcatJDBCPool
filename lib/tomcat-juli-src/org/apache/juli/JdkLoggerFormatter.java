@@ -60,9 +60,9 @@ public class JdkLoggerFormatter extends Formatter {
         long time=record.getMillis();
         String message=formatMessage(record);
 
-        
-        if( name.indexOf(".") >= 0 ) 
-            name = name.substring(name.lastIndexOf(".") + 1);
+
+        if( name.indexOf('.') >= 0 )
+            name = name.substring(name.lastIndexOf('.') + 1);
 
         // Use a string buffer for better performance
         StringBuilder buf = new StringBuilder();

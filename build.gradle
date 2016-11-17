@@ -2,7 +2,7 @@ apply plugin: 'java'
 
 defaultTasks 'makeOneJar'
 
-version = "7.0.64"
+version = "7.0.73"
 ext {
   buildName = "wjw-tomcat-jdbc"
 }

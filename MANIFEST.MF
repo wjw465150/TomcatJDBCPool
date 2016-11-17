@@ -1,17 +1,17 @@
 Manifest-Version: 1.0
-Ant-Version: Apache Ant 1.8.4
+Ant-Version: Apache Ant 1.9.7
 Created-By: 1.6.0_45-b06 (Sun Microsystems Inc.)
 Export-Package: org.apache.tomcat.jdbc.naming;uses:="javax.naming,org.
- apache.juli.logging,javax.naming.spi";version="7.0.64",org.apache.tom
+ apache.juli.logging,javax.naming.spi";version="7.0.73",org.apache.tom
  cat.jdbc.pool;uses:="org.apache.juli.logging,javax.sql,org.apache.tom
  cat.jdbc.pool.jmx,javax.management,javax.naming,javax.naming.spi,org.
- apache.tomcat.jdbc.pool.interceptor";version="7.0.64",org.apache.tomc
+ apache.tomcat.jdbc.pool.interceptor";version="7.0.73",org.apache.tomc
  at.jdbc.pool.interceptor;uses:="org.apache.tomcat.jdbc.pool,org.apach
  e.juli.logging,javax.management.openmbean,javax.management";version="
- 7.0.64",org.apache.tomcat.jdbc.pool.jmx;uses:="org.apache.tomcat.jdbc
- .pool,org.apache.juli.logging,javax.management";version="7.0.64"
+ 7.0.73",org.apache.tomcat.jdbc.pool.jmx;uses:="org.apache.tomcat.jdbc
+ .pool,org.apache.juli.logging,javax.management";version="7.0.73"
 Bundle-Vendor: Apache Software Foundation
-Bundle-Version: 7.0.64
+Bundle-Version: 7.0.73
 Bundle-Name: Apache Tomcat JDBC Connection Pool
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.apache.tomcat.jdbc

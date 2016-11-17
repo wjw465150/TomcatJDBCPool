@@ -76,6 +76,7 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     public static final String FAILED_QUERY_NOTIFICATION = "FAILED QUERY";
     public static final String SUSPECT_ABANDONED_NOTIFICATION = "SUSPECT CONNETION ABANDONED";
     public static final String POOL_EMPTY = "POOL EMPTY";
+    public static final String SUSPECT_RETURNED_NOTIFICATION = "SUSPECT CONNETION RETURNED";
 
     @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
@@ -88,7 +89,8 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     }
 
     public static MBeanNotificationInfo[] getDefaultNotificationInfo() {
-        String[] types = new String[] {NOTIFY_INIT, NOTIFY_CONNECT, NOTIFY_ABANDON, SLOW_QUERY_NOTIFICATION, FAILED_QUERY_NOTIFICATION, SUSPECT_ABANDONED_NOTIFICATION};
+        String[] types = new String[] {NOTIFY_INIT, NOTIFY_CONNECT, NOTIFY_ABANDON, SLOW_QUERY_NOTIFICATION,
+                FAILED_QUERY_NOTIFICATION, SUSPECT_ABANDONED_NOTIFICATION, POOL_EMPTY, SUSPECT_RETURNED_NOTIFICATION};
         String name = Notification.class.getName();
         String description = "A connection pool error condition was met.";
         MBeanNotificationInfo info = new MBeanNotificationInfo(types, name, description);
@@ -532,12 +534,16 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     @Override
     public void setMaxActive(int maxActive) {
         getPoolProperties().setMaxActive(maxActive);
+        //make sure the pool is properly configured
+        pool.checkPoolConfiguration(getPoolProperties());
     }
 
 
     @Override
     public void setMaxIdle(int maxIdle) {
         getPoolProperties().setMaxIdle(maxIdle);
+        //make sure the pool is properly configured
+        pool.checkPoolConfiguration(getPoolProperties());
 
     }
 
@@ -562,6 +568,8 @@ public class ConnectionPool extends NotificationBroadcasterSupport implements Co
     @Override
     public void setMinIdle(int minIdle) {
         getPoolProperties().setMinIdle(minIdle);
+        //make sure the pool is properly configured
+        pool.checkPoolConfiguration(getPoolProperties());
     }
 
 
